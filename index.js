@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
-const ver1 = require('./src/vers1/routes/rutas');
+const ver1 = require('./src/vers1/routes/routes');
 
 app.use(express.json()); 
 

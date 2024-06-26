@@ -1,72 +1,70 @@
-// db.js es la configuración de la base de datos
-const { MongoClient, ObjectId} = require('mongodb')
-const url = 'mongodb+srv://Admin:FOODIE@clusterfoodie.10j4aom.mongodb.net/' //'mongodb://localhost:27017'
-const client = new MongoClient(url)
+const { MongoClient, ObjectId } = require('mongodb');
+const url = 'mongodb+srv://ItzChay13:Azulin13@guardme.sqlfkbc.mongodb.net/';
+const client = new MongoClient(url);
 
-const dbName = 'foodie'//'foodieLocal'
+const dbName = 'GuardMe';
 
-async function con(){
-    console.log("inicia la funcion")
-    await client.connect()
-    console.log("conectado chido")
-    const database = client.db(dbName)
-    const cli = await database.collection('clientes').find().toArray()
-    console.log(cli[0]._id)
-}
-
-function objectID(id){
-    let ID = new ObjectId(id)
-    return ID
-}
-
-async function query(type,collection,mainObject,secondObject,thirdObject) {
-    await client.connect()
-    console.log("conexion lograda")
-    const database = client.db(dbName)
-    let res
-    switch (type) {
-        case "insert":
-            console.log("Insert:")
-            res = await database.collection(collection).insertOne(mainObject)
-            await client.close()
-            await console.log(res)
-            return res
-
-        case "deleteOne":
-            console.log("Delete One:")
-            res = await database.collection(collection).deleteOne(mainObject)
-            await client.close()
-            await console.log(res)
-            return res
-
-        case "update":
-            console.log("Update:")
-            res = await database.collection(collection).updateOne(mainObject,secondObject,thirdObject)
-            await client.close()
-            await console.log(res)
-            return res
-
-        case "find":
-            console.log("Find:")
-            res = await database.collection(collection).find(mainObject).project(secondObject).toArray()
-            await client.close()
-            console.log(res)
-            return res
-        case "aggregation":
-            console.log("Aggregate:")
-            res = await database.collection(collection).aggregate(mainObject).toArray()
-            await client.close()
-            console.log(res)
-            return res
-
-        default:
-            break;
+async function con() {
+    try {
+        console.log("Inicia la función");
+        await client.connect();
+        console.log("Conectado a la base de datos");
+        const database = client.db(dbName);
+        const users = database.collection('users');
+        const user = await users.findOne({});
+        if (user) {
+            console.log(user._id);
+        } else {
+            console.log("No se encontró ningún usuario");
+        }
+    } catch (error) {
+        console.error('Error al conectar a la base de datos:', error);
     }
 }
 
-con()
-.catch(console.error)
-.finally(()=>client.close())
+function objectID(id) {
+    return new ObjectId(id);
+}
 
+async function query(type, collection, mainObject, secondObject, thirdObject) {
+    let res;
+    try {
+        await client.connect();
+        console.log("Conexión lograda");
+        const database = client.db(dbName);
+        switch (type) {
+            case "insert":
+                console.log("Insert:");
+                res = await database.collection(collection).insertOne(mainObject);
+                break;
+            case "deleteOne":
+                console.log("Delete One:");
+                res = await database.collection(collection).deleteOne(mainObject);
+                break;
+            case "update":
+                console.log("Update:");
+                res = await database.collection(collection).updateOne(mainObject, secondObject, thirdObject);
+                break;
+            case "find":
+                console.log("Find:");
+                res = await database.collection(collection).find(mainObject).project(secondObject).toArray();
+                break;
+            case "aggregation":
+                console.log("Aggregate:");
+                res = await database.collection(collection).aggregate(mainObject).toArray();
+                break;
+            default:
+                throw new Error('Tipo de consulta no soportado');
+        }
+    } catch (error) {
+        console.error('Error en la consulta:', error);
+    } finally {
+        await client.close();
+    }
+    console.log(res);
+    return res;
+}
 
-module.exports = {query,objectID};
+con().catch(console.error);
+
+module.exports = { query, objectID };
