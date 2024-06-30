@@ -1,8 +1,8 @@
 const { MongoClient, ObjectId } = require('mongodb');
-const url = 'mongodb+srv://ItzChay13:Azulin13@guardme.sqlfkbc.mongodb.net/';
+const url = 'mongodb+srv://guardme:Guardme.123@guardme.xizczhv.mongodb.net/';
 const client = new MongoClient(url);
 
-const dbName = 'GuardMe';
+const dbName = 'Guardme';
 
 async function con() {
     try {
@@ -10,7 +10,7 @@ async function con() {
         await client.connect();
         console.log("Conectado a la base de datos");
         const database = client.db(dbName);
-        const users = database.collection('users');
+        const users = database.collection('Users');
         const user = await users.findOne({});
         if (user) {
             console.log(user._id);
@@ -44,7 +44,7 @@ async function query(type, collection, mainObject, secondObject, thirdObject) {
             case "update":
                 console.log("Update:");
                 res = await database.collection(collection).updateOne(mainObject, secondObject, thirdObject);
-                break;
+                break;   
             case "find":
                 console.log("Find:");
                 res = await database.collection(collection).find(mainObject).project(secondObject).toArray();
@@ -61,9 +61,10 @@ async function query(type, collection, mainObject, secondObject, thirdObject) {
     } finally {
         await client.close();
     }
-    console.log(res);
+    console.log(res);  // Imprime el resultado de la consulta
     return res;
 }
+
 
 con().catch(console.error);
 
