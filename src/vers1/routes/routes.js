@@ -2,9 +2,35 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const db = require("../../databases/db");
+const WebSocket = require('ws');
+const http = require('http');
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
 // Clave secreta para firmar el token.
 const SECRET_KEY = 'guardMe';
+
+// Manejo del web socket
+wss.on('connection', (ws) => {
+    console.log('New client connected');
+    
+    ws.on('message', (message) => {
+      console.log(`Received message => ${message}`);
+      // Process the message and possibly send a response
+    });
+  
+    ws.on('close', () => {
+      console.log('Client disconnected');
+    });
+  
+    // Send a message to the client
+    ws.send('Hello from server');
+  });
+  
+  server.listen(8080, () => {
+    console.log('Server is listening on port 8080');
+  });
 
 // Ruta de inicio de sesión
 router.post('/auth/login', async (req, res) => {
