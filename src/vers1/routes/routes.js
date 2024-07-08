@@ -11,38 +11,46 @@ const wss = new WebSocket.Server({ server });
 // Clave secreta para firmar el token.
 const SECRET_KEY = 'guardMe';
 
-// Manejo del web socket
+// Manejo del WebSocket
 wss.on('connection', (ws) => {
     console.log('New client connected');
     
     ws.on('message', (message) => {
-      console.log(`Received message => ${message}`);
-      // Process the message and possibly send a response
+        console.log(`Received message => ${message}`);
+        // Parsear el mensaje si está en JSON
+        let data;
+        try {
+            data = JSON.parse(message);
+        } catch (error) {
+            console.error('Invalid JSON format:', error);
+            return;
+        }
+        
+        // Procesar el mensaje y posiblemente enviar una respuesta
+        console.log(`Heart Rate: ${data.heartRate}, Blood Oxygen: ${data.bloodOxygen}, ECG Data: ${data.ecgData}`);
     });
-  
-    ws.on('close', () => {
-      console.log('Client disconnected');
-    });
-  
-    // Send a message to the client
-    ws.send('Hello from server');
-  });
-  
-  server.listen(8080, () => {
-    console.log('Server is listening on port 8080');
-  });
 
-// Ruta de inicio de sesión
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
+
+    // Enviar un mensaje al cliente
+    ws.send(JSON.stringify({ message: 'Hello from server' }));
+});
+
+server.listen(8080, () => {
+    console.log('Server is listening on port 8080');
+});
+
+// Rutas de autenticación y protegidas
 router.post('/auth/login', async (req, res) => {
     const { email, password, expiresInMins } = req.body;
     const expiresIn = expiresInMins ? `${expiresInMins}m` : '1h';
 
-    // Verifica que `email` y `password` no estén vacíos
     if (!email || !password) {
         return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // Busca el usuario en la colección de usuarios
     const user = await db.query("find", "Users", { email, password }, { _id: 1, first_name: 1 });
     console.log("Resultado de la búsqueda del usuario:", user);
 
@@ -51,11 +59,9 @@ router.post('/auth/login', async (req, res) => {
         return res.json({ token });
     }
 
-    // Si no se encuentra el usuario
     res.status(401).json({ message: "Invalid email or password" });
 });
 
-// Middleware para verificar el token
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -68,7 +74,6 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// Ruta protegida
 router.get('/auth/protected', verifyToken, (req, res) => {
     res.json({ message: "You have access to this route!", user: req.user });
 });
