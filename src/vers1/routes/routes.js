@@ -78,4 +78,49 @@ router.get('/auth/protected', verifyToken, (req, res) => {
     res.json({ message: "You have access to this route!", user: req.user });
 });
 
+// routes.js
+router.get('/patients/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const patient = await db.query("find", "Patients", { id_patient: parseInt(id) }, {});
+        if (patient && patient.length > 0) {
+            res.json(patient[0]);
+        } else {
+            res.status(404).json({ message: "Patient not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error });
+    }
+});
+
+// routes.js
+router.put('/patients/:id', async (req, res) => {
+    const { id } = req.params;
+    const updateData = req.body;
+    try {
+        const result = await db.query("update", "Patients", { id_patient: parseInt(id) }, { $set: updateData });
+        if (result.modifiedCount > 0) {
+            res.json({ message: "Patient updated successfully" });
+        } else {
+            res.status(404).json({ message: "Patient not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error });
+    }
+});
+
+// routes.js
+router.post('/patients', async (req, res) => {
+    const newPatientData = req.body;
+    try {
+        const result = await db.query("insert", "Patients", newPatientData);
+        res.json({ message: "Patient created successfully", patientId: result.insertedId });
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error });
+    }
+});
+
+
+
+
 module.exports = router;
